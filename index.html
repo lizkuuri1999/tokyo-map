@@ -52,8 +52,6 @@
     --line-oedo: #ce045b;
     --line-yurikamome: #0065a6;
     --line-tokaido: #ffa500;
-
-    --area-gray: #aeb4ad;
   }
 
   * { box-sizing: border-box; }
@@ -62,12 +60,12 @@
   body {
     background: var(--paper);
     color: var(--dozo-ink);
-    font-family: 'Noto Sans TC', 'Noto Sans', sans-serif;
+    font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', 'Noto Sans', sans-serif;
   }
 
   #map { position: absolute; inset: 0; }
 
-  .leaflet-container { font-family: 'Noto Sans TC', sans-serif; background: #e9e7e0; }
+  .leaflet-container { font-family: inherit; background: #e9e7e0; }
 
   .muted-tiles {
     filter: grayscale(1) brightness(1.22) contrast(0.78) saturate(0);
@@ -210,7 +208,6 @@
   }
   .legend h2 {
     display: inline-block;
-    font-family: 'Noto Serif TC', serif;
     font-size: 0.78rem;
     margin: 0 0 8px;
     font-weight: 700;
@@ -243,7 +240,7 @@
   }
 
   .area-label {
-    font-family: 'Noto Sans TC', sans-serif;
+    font-family: inherit;
     text-align: center;
     white-space: nowrap;
     pointer-events: none;
@@ -272,9 +269,6 @@
     font-weight: 600;
     box-shadow: none;
     border: 1px solid var(--border);
-  }
-  .area-label.dim {
-    opacity: 0.55;
   }
 
   .landmark-label {
@@ -479,6 +473,7 @@
 
   const HOTSPOTS = [
     { key: 'ikebukuro', name: '池袋', romaji: 'Ikebukuro', center: [35.7295, 139.7109], color: 'var(--c-ikebukuro)', radius: 1050,
+      toggleLines: ['yamanote', 'marunouchi'],
       info: {
         attractions: ['太陽城水族館 Sunshine Aquarium', '豐島區庁展望台'],
         food: ['西口拉麵街(激戰區)', '池袋餃子專門店'],
@@ -487,6 +482,7 @@
         lines: ['JR 山手線', 'JR 埼京線', '東京Metro丸之內線', '東京Metro有樂町線', '東京Metro副都心線', '東武東上線', '西武池袋線']
       } },
     { key: 'ueno', name: '上野', romaji: 'Ueno', center: [35.7141, 139.7774], color: 'var(--c-ueno)', radius: 850,
+      toggleLines: ['yamanote', 'ginza'],
       info: {
         attractions: ['上野恩賜公園', '上野動物園', '東京國立博物館'],
         food: ['阿美橫丁小吃街', '上野拉麵激戰區'],
@@ -495,6 +491,7 @@
         lines: ['JR 山手線', '東京Metro銀座線', '東京Metro日比谷線', '京成本線']
       } },
     { key: 'asakusa', name: '淺草', romaji: 'Asakusa', center: [35.7118, 139.7966], color: 'var(--c-asakusa)', radius: 750,
+      toggleLines: ['ginza'],
       info: {
         attractions: ['淺草寺', '雷門', '晴空塔遠眺點'],
         food: ['淺草今半 壽喜燒', '駒形どぜう 老字號料理'],
@@ -503,6 +500,7 @@
         lines: ['東京Metro銀座線', '都營淺草線', '東武伊勢崎線(晴空塔線)']
       } },
     { key: 'akihabara', name: '秋葉原', romaji: 'Akihabara', center: [35.6984, 139.7731], color: 'var(--c-akihabara)', radius: 700,
+      toggleLines: ['yamanote'],
       info: {
         attractions: ['電器街', '動漫周邊店集散地'],
         food: ['秋葉原拉麵店', '女僕咖啡廳周邊美食'],
@@ -511,6 +509,7 @@
         lines: ['JR 山手線', '東京Metro日比谷線', '筑波快線 TX']
       } },
     { key: 'shinjuku', name: '新宿', romaji: 'Shinjuku', center: [35.6926, 139.7006], color: 'var(--c-shinjuku)', radius: 1250,
+      toggleLines: ['yamanote', 'marunouchi', 'oedo'],
       info: {
         attractions: ['新宿御苑', '東京都廳展望室(免費)', '歌舞伎町'],
         food: ['思い出橫丁 烤雞串小巷', '新宿三丁目拉麵街'],
@@ -519,6 +518,7 @@
         lines: ['JR 山手線', 'JR 中央線', '東京Metro丸之內線', '都營大江戶線', '小田急線', '京王線']
       } },
     { key: 'tokyo', name: '東京車站・丸之內', romaji: 'Tokyo Sta. / Marunouchi', center: [35.6812, 139.7645], color: 'var(--c-tokyo)', radius: 950,
+      toggleLines: ['yamanote', 'marunouchi', 'tokaido'],
       info: {
         attractions: ['東京車站丸之內站舍', '皇居外苑'],
         food: ['東京車站一番街拉麵激戰區'],
@@ -527,6 +527,7 @@
         lines: ['JR 山手線', 'JR 中央線', '東京Metro丸之內線', '東海道新幹線等各線新幹線']
       } },
     { key: 'harajuku', name: '原宿・表參道', romaji: 'Harajuku / Omotesando', center: [35.6684, 139.7075], color: 'var(--c-harajuku)', radius: 750,
+      toggleLines: ['yamanote', 'ginza'],
       info: {
         attractions: ['明治神宮', '竹下通'],
         food: ['竹下通可麗餅店'],
@@ -535,6 +536,7 @@
         lines: ['JR 山手線', '東京Metro千代田線', '東京Metro副都心線', '東京Metro銀座線']
       } },
     { key: 'ginza', name: '銀座', romaji: 'Ginza', center: [35.6717, 139.7650], color: 'var(--c-ginza)', radius: 850,
+      toggleLines: ['ginza'],
       info: {
         attractions: ['歌舞伎座', '銀座和光鐘樓'],
         food: ['銀座高級壽司名店街'],
@@ -543,6 +545,7 @@
         lines: ['東京Metro銀座線', '東京Metro丸之內線', '東京Metro日比谷線', '東京Metro有樂町線']
       } },
     { key: 'shibuya', name: '澀谷', romaji: 'Shibuya', center: [35.6595, 139.7005], color: 'var(--c-shibuya)', radius: 1000,
+      toggleLines: ['yamanote', 'ginza'],
       info: {
         attractions: ['澀谷SCRAMBLE SQUARE展望台', '忠犬八公像'],
         food: ['一蘭拉麵澀谷店', '澀谷橫丁'],
@@ -551,6 +554,7 @@
         lines: ['JR 山手線', 'JR 埼京線', '東京Metro銀座線', '東京Metro半藏門線', '東京Metro副都心線', '京王井之頭線', '東急東橫線／田園都市線']
       } },
     { key: 'roppongi', name: '六本木', romaji: 'Roppongi', center: [35.6627, 139.7318], color: 'var(--c-roppongi)', radius: 850,
+      toggleLines: ['oedo'],
       info: {
         attractions: ['六本木新城展望台(森大廈)', '東京中城', '國立新美術館'],
         food: ['六本木高級餐廳一條街'],
@@ -559,6 +563,7 @@
         lines: ['東京Metro日比谷線', '都營大江戶線']
       } },
     { key: 'odaiba', name: '台場', romaji: 'Odaiba', center: [35.6270, 139.7755], color: 'var(--c-odaiba)', radius: 750,
+      toggleLines: ['yurikamome'],
       info: {
         attractions: ['台場海濱公園', '彩虹大橋', '獨角獸鋼彈立像'],
         food: ['台場購物中心美食街'],
@@ -598,18 +603,18 @@
     Object.keys(areaLayers).forEach(k => {
       const layer = areaLayers[k];
       const isActive = key === null || k === key;
-      const c = isActive ? layer.data.color : 'var(--area-gray)';
       layer.circle.setStyle({
-        color: c,
-        fillColor: c,
-        fillOpacity: isActive ? 0.16 : 0.09,
-        dashArray: isActive ? '7 5' : '4 4'
+        color: isActive ? layer.data.color : 'var(--c-context)',
+        fillColor: isActive ? layer.data.color : 'var(--c-context)',
+        weight: isActive ? 2.6 : 1.3,
+        fillOpacity: isActive ? 0.16 : 0.14,
+        dashArray: isActive ? '7 5' : null
       });
       if (layer.labelEl) {
-        layer.labelEl.style.setProperty('--c', c);
-        layer.labelEl.classList.toggle('dim', !isActive);
+        layer.labelEl.classList.toggle('context', !isActive);
       }
     });
+    applyLineSelection(key ? areaLayers[key].data.toggleLines : []);
     if (key) showInfoPanel(areaLayers[key].data);
     else hideInfoPanel();
   }
@@ -732,13 +737,19 @@
     });
   });
 
-  document.getElementById('clearLines').addEventListener('click', () => {
+  function applyLineSelection(keys) {
+    const activeSet = new Set(keys || []);
     chips.forEach(chip => {
-      chip.classList.remove('active');
-      chip.setAttribute('aria-pressed', 'false');
-      map.removeLayer(lineLayers[chip.dataset.line]);
+      const key = chip.dataset.line;
+      const active = activeSet.has(key);
+      chip.classList.toggle('active', active);
+      chip.setAttribute('aria-pressed', String(active));
+      if (active) lineLayers[key].addTo(map);
+      else map.removeLayer(lineLayers[key]);
     });
-  });
+  }
+
+  document.getElementById('clearLines').addEventListener('click', () => applyLineSelection([]));
 </script>
 </body>
 </html>
