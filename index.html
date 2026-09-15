@@ -52,6 +52,8 @@
     --line-oedo: #ce045b;
     --line-yurikamome: #0065a6;
     --line-tokaido: #ffa500;
+
+    --area-gray: #aeb4ad;
   }
 
   * { box-sizing: border-box; }
@@ -271,6 +273,9 @@
     box-shadow: none;
     border: 1px solid var(--border);
   }
+  .area-label.dim {
+    opacity: 0.55;
+  }
 
   .landmark-label {
     font-size: 9.5px;
@@ -293,12 +298,106 @@
     transform: translate(-50%, -50%);
   }
 
+  .info-panel {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    z-index: 700;
+    width: 300px;
+    max-width: 84vw;
+    max-height: min(64vh, 560px);
+    padding: 14px 16px;
+    overflow-y: auto;
+  }
+
+  .info-panel .info-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1.6px solid var(--dozo-ink);
+    background: #fff;
+    color: var(--dozo-ink);
+    font-size: 0.9rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .info-panel .info-close:hover { background: var(--dozo-red); color: #fff; }
+
+  .info-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding-right: 24px;
+    margin-bottom: 10px;
+  }
+  .info-header .info-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin-top: 4px;
+    flex: none;
+    background: var(--c, var(--ink-soft));
+  }
+  .info-header h2 {
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.05rem;
+    margin: 0;
+    color: var(--dozo-ink);
+  }
+  .info-header .romaji {
+    margin: 2px 0 0;
+    font-size: 0.72rem;
+    color: var(--ink-soft);
+  }
+
+  .info-section { margin: 0 0 10px; }
+  .info-section:last-child { margin-bottom: 0; }
+  .info-section h3 {
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    margin: 0 0 4px;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .info-section ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .info-section li {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--dozo-ink);
+    padding-left: 12px;
+    position: relative;
+  }
+  .info-section li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--ink-soft);
+  }
+
   @media (max-width: 640px) {
     .masthead { max-width: 68vw; padding: 10px 14px; }
     .masthead h1 { font-size: 1.1rem; }
     .masthead p { display: none; }
     .transit-panel { width: 150px; }
     .legend { display: none; }
+    .info-panel { left: 14px; right: 14px; width: auto; max-width: none; max-height: 46vh; }
   }
 </style>
 </head>
@@ -352,6 +451,11 @@
   </ul>
 </div>
 
+<aside class="info-panel ui-card" id="infoPanel" hidden>
+  <button class="info-close" id="infoClose" type="button" aria-label="關閉">×</button>
+  <div id="infoContent"></div>
+</aside>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
   const map = L.map('map', { zoomControl: false, maxBoundsViscosity: 0.6 })
@@ -370,21 +474,98 @@
     const html = isContext
       ? `<div class="area-label context"><span class="name">${name}</span></div>`
       : `<div class="area-label" style="--c:${cssColor}"><span class="name">${name}</span><span class="romaji">${romaji}</span></div>`;
-    L.marker(center, { icon: L.divIcon({ className: '', html, iconSize: [0, 0] }), interactive: false }).addTo(map);
+    return L.marker(center, { icon: L.divIcon({ className: '', html, iconSize: [0, 0] }), interactive: false }).addTo(map);
   }
 
   const HOTSPOTS = [
-    { name: '池袋', romaji: 'Ikebukuro', center: [35.7295, 139.7109], color: 'var(--c-ikebukuro)', radius: 1050 },
-    { name: '上野', romaji: 'Ueno', center: [35.7141, 139.7774], color: 'var(--c-ueno)', radius: 850 },
-    { name: '淺草', romaji: 'Asakusa', center: [35.7118, 139.7966], color: 'var(--c-asakusa)', radius: 750 },
-    { name: '秋葉原', romaji: 'Akihabara', center: [35.6984, 139.7731], color: 'var(--c-akihabara)', radius: 700 },
-    { name: '新宿', romaji: 'Shinjuku', center: [35.6926, 139.7006], color: 'var(--c-shinjuku)', radius: 1250 },
-    { name: '東京車站・丸之內', romaji: 'Tokyo Sta. / Marunouchi', center: [35.6812, 139.7645], color: 'var(--c-tokyo)', radius: 950 },
-    { name: '原宿・表參道', romaji: 'Harajuku / Omotesando', center: [35.6684, 139.7075], color: 'var(--c-harajuku)', radius: 750 },
-    { name: '銀座', romaji: 'Ginza', center: [35.6717, 139.7650], color: 'var(--c-ginza)', radius: 850 },
-    { name: '澀谷', romaji: 'Shibuya', center: [35.6595, 139.7005], color: 'var(--c-shibuya)', radius: 1000 },
-    { name: '六本木', romaji: 'Roppongi', center: [35.6627, 139.7318], color: 'var(--c-roppongi)', radius: 850 },
-    { name: '台場', romaji: 'Odaiba', center: [35.6270, 139.7755], color: 'var(--c-odaiba)', radius: 750 }
+    { key: 'ikebukuro', name: '池袋', romaji: 'Ikebukuro', center: [35.7295, 139.7109], color: 'var(--c-ikebukuro)', radius: 1050,
+      info: {
+        attractions: ['太陽城水族館 Sunshine Aquarium', '豐島區庁展望台'],
+        food: ['西口拉麵街(激戰區)', '池袋餃子專門店'],
+        cafes: ['Animate Cafe 池袋店', '池袋西口星巴克'],
+        shopping: ['西武百貨 池袋本店', '東武百貨 池袋店', 'Sunshine City 購物中心'],
+        lines: ['JR 山手線', 'JR 埼京線', '東京Metro丸之內線', '東京Metro有樂町線', '東京Metro副都心線', '東武東上線', '西武池袋線']
+      } },
+    { key: 'ueno', name: '上野', romaji: 'Ueno', center: [35.7141, 139.7774], color: 'var(--c-ueno)', radius: 850,
+      info: {
+        attractions: ['上野恩賜公園', '上野動物園', '東京國立博物館'],
+        food: ['阿美橫丁小吃街', '上野拉麵激戰區'],
+        cafes: ['上野公園周邊老字號喫茶店'],
+        shopping: ['阿美橫丁(Ameyoko)商店街'],
+        lines: ['JR 山手線', '東京Metro銀座線', '東京Metro日比谷線', '京成本線']
+      } },
+    { key: 'asakusa', name: '淺草', romaji: 'Asakusa', center: [35.7118, 139.7966], color: 'var(--c-asakusa)', radius: 750,
+      info: {
+        attractions: ['淺草寺', '雷門', '晴空塔遠眺點'],
+        food: ['淺草今半 壽喜燒', '駒形どぜう 老字號料理'],
+        cafes: ['仲見世通老字號茶屋'],
+        shopping: ['仲見世通商店街'],
+        lines: ['東京Metro銀座線', '都營淺草線', '東武伊勢崎線(晴空塔線)']
+      } },
+    { key: 'akihabara', name: '秋葉原', romaji: 'Akihabara', center: [35.6984, 139.7731], color: 'var(--c-akihabara)', radius: 700,
+      info: {
+        attractions: ['電器街', '動漫周邊店集散地'],
+        food: ['秋葉原拉麵店', '女僕咖啡廳周邊美食'],
+        cafes: ['女僕咖啡廳(如 Maidreamin)'],
+        shopping: ['Yodobashi Akiba 友都八喜', '秋葉原電氣街商圈'],
+        lines: ['JR 山手線', '東京Metro日比谷線', '筑波快線 TX']
+      } },
+    { key: 'shinjuku', name: '新宿', romaji: 'Shinjuku', center: [35.6926, 139.7006], color: 'var(--c-shinjuku)', radius: 1250,
+      info: {
+        attractions: ['新宿御苑', '東京都廳展望室(免費)', '歌舞伎町'],
+        food: ['思い出橫丁 烤雞串小巷', '新宿三丁目拉麵街'],
+        cafes: ['% Arabica 新宿店', 'Blue Bottle Coffee 新宿'],
+        shopping: ['伊勢丹新宿本店', '新宿高島屋 Times Square', 'LUMINE'],
+        lines: ['JR 山手線', 'JR 中央線', '東京Metro丸之內線', '都營大江戶線', '小田急線', '京王線']
+      } },
+    { key: 'tokyo', name: '東京車站・丸之內', romaji: 'Tokyo Sta. / Marunouchi', center: [35.6812, 139.7645], color: 'var(--c-tokyo)', radius: 950,
+      info: {
+        attractions: ['東京車站丸之內站舍', '皇居外苑'],
+        food: ['東京車站一番街拉麵激戰區'],
+        cafes: ['丸之內仲通商辦區咖啡廳'],
+        shopping: ['大丸東京店', '丸之內大樓(Marunouchi Building)', 'KITTE'],
+        lines: ['JR 山手線', 'JR 中央線', '東京Metro丸之內線', '東海道新幹線等各線新幹線']
+      } },
+    { key: 'harajuku', name: '原宿・表參道', romaji: 'Harajuku / Omotesando', center: [35.6684, 139.7075], color: 'var(--c-harajuku)', radius: 750,
+      info: {
+        attractions: ['明治神宮', '竹下通'],
+        food: ['竹下通可麗餅店'],
+        cafes: ['表參道精品咖啡一條街'],
+        shopping: ['表參道之丘 Omotesando Hills'],
+        lines: ['JR 山手線', '東京Metro千代田線', '東京Metro副都心線', '東京Metro銀座線']
+      } },
+    { key: 'ginza', name: '銀座', romaji: 'Ginza', center: [35.6717, 139.7650], color: 'var(--c-ginza)', radius: 850,
+      info: {
+        attractions: ['歌舞伎座', '銀座和光鐘樓'],
+        food: ['銀座高級壽司名店街'],
+        cafes: ['銀座老字號喫茶店'],
+        shopping: ['銀座三越', '松屋銀座', 'GINZA SIX'],
+        lines: ['東京Metro銀座線', '東京Metro丸之內線', '東京Metro日比谷線', '東京Metro有樂町線']
+      } },
+    { key: 'shibuya', name: '澀谷', romaji: 'Shibuya', center: [35.6595, 139.7005], color: 'var(--c-shibuya)', radius: 1000,
+      info: {
+        attractions: ['澀谷SCRAMBLE SQUARE展望台', '忠犬八公像'],
+        food: ['一蘭拉麵澀谷店', '澀谷橫丁'],
+        cafes: ['Blue Bottle Coffee 澀谷', '蔦屋書店咖啡'],
+        shopping: ['澀谷109', '西武澀谷店', 'PARCO'],
+        lines: ['JR 山手線', 'JR 埼京線', '東京Metro銀座線', '東京Metro半藏門線', '東京Metro副都心線', '京王井之頭線', '東急東橫線／田園都市線']
+      } },
+    { key: 'roppongi', name: '六本木', romaji: 'Roppongi', center: [35.6627, 139.7318], color: 'var(--c-roppongi)', radius: 850,
+      info: {
+        attractions: ['六本木新城展望台(森大廈)', '東京中城', '國立新美術館'],
+        food: ['六本木高級餐廳一條街'],
+        cafes: ['東京中城 Galleria 咖啡廳'],
+        shopping: ['六本木新城購物區', '東京中城 Galleria'],
+        lines: ['東京Metro日比谷線', '都營大江戶線']
+      } },
+    { key: 'odaiba', name: '台場', romaji: 'Odaiba', center: [35.6270, 139.7755], color: 'var(--c-odaiba)', radius: 750,
+      info: {
+        attractions: ['台場海濱公園', '彩虹大橋', '獨角獸鋼彈立像'],
+        food: ['台場購物中心美食街'],
+        cafes: ['台場海景咖啡廳'],
+        shopping: ['DiverCity Tokyo Plaza', 'AQUA CiTY台場', 'VenusFort'],
+        lines: ['百合海鷗號 Yurikamome', 'JR京葉線／臨海線']
+      } }
   ];
 
   const CONTEXT = [
@@ -394,12 +575,75 @@
     { name: '埼玉 Saitama', center: [35.9064, 139.6233], radius: 1500 }
   ];
 
+  const areaLayers = {};
+  let activeKey = null;
+
   HOTSPOTS.forEach(a => {
-    L.circle(a.center, {
+    const circle = L.circle(a.center, {
       radius: a.radius, color: a.color, weight: 2.6, dashArray: '7 5', fillColor: a.color, fillOpacity: 0.16
     }).addTo(map);
-    addAreaLabel(a.center, a.color, a.name, a.romaji, false);
+    const marker = addAreaLabel(a.center, a.color, a.name, a.romaji, false);
+    const labelEl = marker.getElement() ? marker.getElement().querySelector('.area-label') : null;
+
+    areaLayers[a.key] = { circle, labelEl, data: a };
+
+    circle.on('click', (e) => {
+      L.DomEvent.stopPropagation(e);
+      setActiveArea(activeKey === a.key ? null : a.key);
+    });
   });
+
+  function setActiveArea(key) {
+    activeKey = key;
+    Object.keys(areaLayers).forEach(k => {
+      const layer = areaLayers[k];
+      const isActive = key === null || k === key;
+      const c = isActive ? layer.data.color : 'var(--area-gray)';
+      layer.circle.setStyle({
+        color: c,
+        fillColor: c,
+        fillOpacity: isActive ? 0.16 : 0.09,
+        dashArray: isActive ? '7 5' : '4 4'
+      });
+      if (layer.labelEl) {
+        layer.labelEl.style.setProperty('--c', c);
+        layer.labelEl.classList.toggle('dim', !isActive);
+      }
+    });
+    if (key) showInfoPanel(areaLayers[key].data);
+    else hideInfoPanel();
+  }
+
+  function infoSection(label, items) {
+    if (!items || !items.length) return '';
+    return `<div class="info-section"><h3>${label}</h3><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`;
+  }
+
+  function showInfoPanel(area) {
+    const content = document.getElementById('infoContent');
+    content.innerHTML = `
+      <div class="info-header" style="--c:${area.color}">
+        <span class="info-dot"></span>
+        <div>
+          <h2>${area.name}</h2>
+          <p class="romaji">${area.romaji}</p>
+        </div>
+      </div>
+      ${infoSection('推薦景點', area.info.attractions)}
+      ${infoSection('推薦餐廳', area.info.food)}
+      ${infoSection('咖啡廳', area.info.cafes)}
+      ${infoSection('商店街／百貨', area.info.shopping)}
+      ${infoSection('地鐵／電車路線', area.info.lines)}
+    `;
+    document.getElementById('infoPanel').hidden = false;
+  }
+
+  function hideInfoPanel() {
+    document.getElementById('infoPanel').hidden = true;
+  }
+
+  document.getElementById('infoClose').addEventListener('click', () => setActiveArea(null));
+  map.on('click', () => setActiveArea(null));
 
   CONTEXT.forEach(a => {
     L.circle(a.center, { radius: a.radius, color: 'var(--c-context)', weight: 1.3, fillColor: 'var(--c-context)', fillOpacity: 0.14 }).addTo(map);
@@ -460,9 +704,9 @@
   Object.keys(LINES).forEach(key => {
     const L_ = LINES[key];
     const group = L.layerGroup();
-    L.polyline(L_.pts, { color: getComputedColor(L_.color), weight: 4.5, opacity: 0.92, lineJoin: 'round' }).addTo(group);
+    L.polyline(L_.pts, { color: getComputedColor(L_.color), weight: 4.5, opacity: 0.92, lineJoin: 'round', interactive: false }).addTo(group);
     L_.pts.forEach(pt => {
-      L.circleMarker(pt, { radius: 3.4, color: getComputedColor(L_.color), weight: 1.4, fillColor: '#fff', fillOpacity: 1 }).addTo(group);
+      L.circleMarker(pt, { radius: 3.4, color: getComputedColor(L_.color), weight: 1.4, fillColor: '#fff', fillOpacity: 1, interactive: false }).addTo(group);
     });
     lineLayers[key] = group;
   });
