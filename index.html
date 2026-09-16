@@ -104,11 +104,10 @@
     overflow: hidden;
     max-height: 0;
     opacity: 0;
-    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+    transition: max-height 0.22s ease, opacity 0.22s ease;
     text-align: left;
   }
   .todo-panel.open {
-    max-height: 480px;
     opacity: 1;
   }
   .todo-panel .panel-note {
@@ -297,6 +296,14 @@
         renderTodos();
       });
     });
+
+    if (todoPanel.classList.contains('open')) syncTodoPanelHeight();
+  }
+
+  function syncTodoPanelHeight() {
+    todoPanel.style.maxHeight = todoPanel.classList.contains('open')
+      ? todoPanel.scrollHeight + 'px'
+      : '0px';
   }
 
   function addTodo() {
@@ -319,6 +326,7 @@
   progressWidget.addEventListener('click', () => {
     const open = todoPanel.classList.toggle('open');
     progressWidget.setAttribute('aria-expanded', String(open));
+    syncTodoPanelHeight();
   });
 
   renderTodos();
