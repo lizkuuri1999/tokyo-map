@@ -29,6 +29,10 @@
 html, body { height: 100%; margin: 0; }
 
 body {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
   background: var(--paper);
   color: var(--dozo-ink);
   font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', 'Noto Sans', sans-serif;
@@ -44,7 +48,8 @@ body {
 /* ---- app shell: sidebar + main view ---- */
 .app-shell {
   display: flex;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   width: 100%;
   overflow: hidden;
 }

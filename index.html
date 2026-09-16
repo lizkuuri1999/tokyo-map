@@ -3,563 +3,124 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>東京旅遊地圖</title>
+<title>東京旅遊規劃</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="shared.css">
 <style>
-  @font-face {
-    font-family: 'GenJyuuGothic';
-    src: url('https://cdn.jsdelivr.net/npm/@fontpkg/gen-jyuu-gothic@1.2.20150607/GenJyuuGothic-Medium.ttf') format('truetype');
-    font-weight: 500;
-    font-display: swap;
-  }
-
-  :root {
-    --paper: #eef1ec;
-    --ink: #263238;
-    --ink-soft: #5b6b6f;
-    --gray-area-text: #5c5847;
-    --border: rgba(38, 50, 56, 0.16);
-    --card-bg: rgba(253, 253, 251, 0.92);
-    --chip-bg: rgba(38, 50, 56, 0.06);
-    --chip-inactive: #8b948e;
-    --chip-inactive-border: rgba(38, 50, 56, 0.22);
-    --shadow: 0 10px 30px rgba(38, 50, 56, 0.16);
-
-    --dozo-green: #3ebd8e;
-    --dozo-yellow: #f5c242;
-    --dozo-red: #ea4b3c;
-    --dozo-blue: #9ad9ea;
-    --dozo-ink: #17181a;
-    --hard-shadow: 4px 4px 0 var(--dozo-ink);
-
-    --c-shinjuku: #2f4a7c;
-    --c-ikebukuro: #5f7d2e;
-    --c-shibuya: #b12e52;
-    --c-harajuku: #b85a8f;
-    --c-roppongi: #684a94;
-    --c-ginza: #9c7a34;
-    --c-tokyo: #8a4636;
-    --c-akihabara: #c06f0f;
-    --c-ueno: #3c7a56;
-    --c-asakusa: #a83924;
-    --c-odaiba: #237691;
-    --c-context: #837c68;
-
-    --line-yamanote: #9acd32;
-    --line-ginza: #ff9500;
-    --line-marunouchi: #f62e36;
-    --line-oedo: #ce045b;
-    --line-yurikamome: #0065a6;
-    --line-tokaido: #ffa500;
-  }
-
-  * { box-sizing: border-box; }
-  html, body { height: 100%; margin: 0; }
-
-  body {
-    background: var(--paper);
-    color: var(--dozo-ink);
-    font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', 'Heiti TC', 'Noto Sans', sans-serif;
-  }
-
-  #map { position: absolute; inset: 0; }
-
-  .leaflet-container { font-family: inherit; background: #e9e7e0; }
-
-  .muted-tiles {
-    filter: grayscale(1) brightness(1.22) contrast(0.78) saturate(0);
-  }
-
-  .ui-card {
-    background: #fff;
-    border: 2.5px solid var(--dozo-ink);
-    border-radius: 16px;
-    box-shadow: var(--hard-shadow);
-  }
-
-  .masthead {
-    position: absolute;
-    top: 14px;
-    left: 14px;
-    z-index: 500;
-    max-width: min(360px, 78vw);
-    padding: 14px 18px;
-  }
-
-  .masthead .eyebrow {
-    display: inline-block;
-    font-size: 0.66rem;
-    letter-spacing: 0.08em;
-    color: var(--dozo-ink);
-    font-weight: 700;
-    background: var(--dozo-yellow);
-    border: 1.6px solid var(--dozo-ink);
-    border-radius: 999px;
-    padding: 2px 10px;
-    margin: 0 0 8px;
-  }
-
-  .masthead h1 {
-    font-family: 'GenJyuuGothic', 'Noto Serif TC', serif;
-    font-weight: 700;
-    font-size: 1.4rem;
-    margin: 0 0 6px;
-    color: var(--dozo-ink);
-  }
-
-  .masthead h1 .accent {
-    background: var(--dozo-green);
-    padding: 0 4px;
-    border-radius: 4px;
-  }
-
-  .masthead p {
-    margin: 0;
-    font-size: 0.78rem;
-    color: var(--ink-soft);
-    line-height: 1.55;
-  }
-
-  .transit-panel {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    z-index: 500;
-    width: 188px;
-    max-width: 46vw;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .transit-panel .panel-label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    align-self: flex-start;
-    font-family: inherit;
-    font-size: 0.64rem;
-    letter-spacing: 0.06em;
-    color: var(--dozo-ink);
-    font-weight: 700;
-    background: var(--dozo-blue);
-    border: 1.6px solid var(--dozo-ink);
-    border-radius: 999px;
-    padding: 2px 10px;
-    margin: 0 0 6px;
-    cursor: pointer;
-  }
-  .transit-panel .panel-label .chevron {
-    display: inline-block;
-    font-size: 0.6rem;
-    transition: transform 0.2s ease;
-  }
-  .transit-panel.collapsed .panel-label .chevron {
-    transform: rotate(-90deg);
-  }
-
-  .transit-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    overflow: hidden;
-    max-height: 340px;
-    opacity: 1;
-    transition: max-height 0.25s ease, opacity 0.2s ease;
-  }
-  .transit-panel.collapsed .transit-list {
-    max-height: 0;
-    opacity: 0;
-  }
-
-  .chip {
-    --line-color: var(--ink-soft);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    background: transparent;
-    color: var(--chip-inactive);
-    border: 1px solid transparent;
-    border-radius: 7px;
-    padding: 6px 10px;
-    font-family: inherit;
-    font-size: 0.8rem;
-    font-weight: 500;
-    cursor: pointer;
-    text-align: left;
-    transition: background-color 0.18s ease, color 0.18s ease;
-  }
-  .chip:hover { background: var(--chip-bg); }
-  .chip:focus-visible { outline: 2px solid var(--line-color); outline-offset: 2px; }
-  .chip.active { color: var(--dozo-ink); font-weight: 700; }
-  .chip .bar {
-    width: 7px;
-    height: 20px;
-    border-radius: 2px;
-    background: var(--chip-inactive);
-    flex: none;
-    transition: background-color 0.18s ease, box-shadow 0.18s ease;
-  }
-  .chip.active .bar {
-    background: var(--line-color);
-    box-shadow: 0 0 0 3px color-mix(in srgb, var(--line-color) 22%, transparent);
-  }
-
-  .clear-btn {
-    margin: 8px 4px 0;
-    background: var(--dozo-ink);
-    border: 1.6px solid var(--dozo-ink);
-    border-radius: 999px;
-    font-family: inherit;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #fff;
-    text-decoration: none;
-    cursor: pointer;
-    padding: 5px 12px;
-    text-align: center;
-    transition: transform 0.12s ease, background-color 0.12s ease;
-  }
-  .clear-btn:hover { background: var(--dozo-red); transform: translateY(-1px); }
-
-  .legend {
-    position: absolute;
-    left: 14px;
-    bottom: 14px;
-    z-index: 500;
-    max-width: min(620px, 92vw);
-    padding: 12px 16px;
-  }
-  .legend h2 {
-    display: inline-block;
-    font-size: 0.78rem;
-    margin: 0 0 8px;
-    font-weight: 700;
-    color: var(--dozo-ink);
-    background: var(--dozo-yellow);
-    border: 1.6px solid var(--dozo-ink);
-    border-radius: 999px;
-    padding: 2px 10px;
-  }
-  .legend ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px 14px;
-  }
-  .legend li {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.74rem;
-    font-weight: 500;
-  }
-  .legend .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex: none;
-  }
-
-  .area-label {
-    font-family: inherit;
-    text-align: center;
-    white-space: nowrap;
-    pointer-events: none;
-    transform: translate(-50%, -50%);
-  }
-  .area-label .name {
-    background: var(--c, var(--ink-soft));
-    color: #fdfdfb;
-    font-weight: 700;
-    font-size: 12.5px;
-    padding: 2px 8px;
-    border-radius: 999px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-    display: inline-block;
-  }
-  .area-label .romaji {
-    display: block;
-    font-size: 9px;
-    color: var(--ink-soft);
-    margin-top: 2px;
-    text-shadow: 0 1px 3px var(--paper), 0 -1px 3px var(--paper);
-  }
-  .area-label.context .name {
-    background: var(--card-bg);
-    color: var(--gray-area-text);
-    font-weight: 600;
-    box-shadow: none;
-    border: 1px solid var(--border);
-  }
-
-  .landmark-label {
-    font-size: 9.5px;
-    font-weight: 600;
-    color: var(--ink-soft);
-    white-space: nowrap;
-    text-shadow: 0 1px 2px var(--paper), 0 -1px 2px var(--paper), 1px 0 2px var(--paper), -1px 0 2px var(--paper);
-    transform: translate(-50%, 4px);
-  }
-
-  .line-label {
-    font-size: 10.5px;
-    font-weight: 700;
-    padding: 1px 6px;
-    border-radius: 999px;
-    background: var(--card-bg);
-    border: 1.4px solid var(--lc);
-    color: var(--lc);
-    white-space: nowrap;
-    transform: translate(-50%, -50%);
-  }
-
-  .info-panel {
-    position: absolute;
-    right: 14px;
-    bottom: 14px;
-    z-index: 700;
-    width: 300px;
-    max-width: 84vw;
-    max-height: min(64vh, 560px);
-    padding: 14px 16px;
+  .home-view {
+    height: 100%;
     overflow-y: auto;
-  }
-
-  .info-panel .info-close {
-    position: absolute;
-    top: 8px;
-    right: 10px;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: 1.6px solid var(--dozo-ink);
-    background: #fff;
-    color: var(--dozo-ink);
-    font-size: 0.9rem;
-    line-height: 1;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 24px;
   }
-  .info-panel .info-close:hover { background: var(--dozo-red); color: #fff; }
 
-  .info-image {
-    margin: 0 0 10px;
-  }
-  .info-image img {
-    display: block;
+  .hero-card {
     width: 100%;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 1.6px solid var(--dozo-ink);
-  }
-  .info-image figcaption {
-    margin-top: 3px;
-    font-size: 0.62rem;
-    color: var(--ink-soft);
-    text-align: right;
-  }
-  .info-image figcaption a { color: inherit; }
-
-  .info-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 8px;
-    padding-right: 24px;
-    margin-bottom: 10px;
-  }
-  .info-header .info-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    margin-top: 4px;
-    flex: none;
-    background: var(--c, var(--ink-soft));
-  }
-  .info-header h2 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    margin: 0;
-    color: var(--dozo-ink);
-  }
-  .info-header .romaji {
-    margin: 2px 0 0;
-    font-size: 0.72rem;
-    color: var(--ink-soft);
+    max-width: 460px;
+    padding: 36px 32px;
+    text-align: center;
   }
 
-  .info-section { margin: 0 0 10px; }
-  .info-section:last-child { margin-bottom: 0; }
-  .info-section h3 {
-    font-size: 0.72rem;
-    letter-spacing: 0.04em;
-    margin: 0 0 4px;
-    color: var(--ink-soft);
-    font-weight: 700;
-  }
-  .info-section ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .info-section li {
-    font-size: 0.82rem;
-    line-height: 1.4;
-    color: var(--dozo-ink);
-    padding-left: 12px;
-    position: relative;
-  }
-  .info-section li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.55em;
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--ink-soft);
-  }
-
-  @media (max-width: 640px) {
-    .masthead { max-width: 68vw; padding: 10px 14px; }
-    .masthead h1 { font-size: 1.1rem; }
-    .masthead p { display: none; }
-    .transit-panel { width: 150px; }
-    .legend { display: none; }
-    .info-panel { left: 14px; right: 14px; width: auto; max-width: none; max-height: 46vh; }
-  }
-
-  /* ---- app shell: sidebar + main view + overview panel ---- */
-  .app-shell {
-    display: flex;
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .sidebar {
-    flex: none;
-    width: 208px;
-    background: #fff;
-    border-right: 2.5px solid var(--dozo-ink);
-    display: flex;
-    flex-direction: column;
-    padding: 18px 14px;
-    gap: 18px;
-    overflow-y: auto;
-  }
-  .sidebar .brand {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .sidebar .brand .eyebrow {
+  .hero-card .eyebrow {
     display: inline-block;
-    width: fit-content;
-    font-size: 0.62rem;
+    font-size: 0.66rem;
     letter-spacing: 0.08em;
     font-weight: 700;
     background: var(--dozo-yellow);
     border: 1.6px solid var(--dozo-ink);
     border-radius: 999px;
     padding: 2px 10px;
+    margin: 0 0 14px;
   }
-  .sidebar .brand h1 {
+
+  .hero-card h1 {
     font-family: 'GenJyuuGothic', 'Noto Serif TC', serif;
-    font-size: 1.15rem;
-    margin: 4px 0 0;
+    font-size: 2.4rem;
+    margin: 0 0 8px;
     color: var(--dozo-ink);
   }
-  .sidebar .brand .accent {
-    background: var(--dozo-green);
-    padding: 0 4px;
-    border-radius: 4px;
-  }
-  .sidebar nav {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .sidebar nav a {
-    display: block;
-    padding: 9px 12px;
-    border-radius: 9px;
+
+  .hero-card .dates {
+    display: inline-block;
+    font-size: 1rem;
+    font-weight: 700;
     color: var(--ink-soft);
-    text-decoration: none;
-    font-size: 0.88rem;
-    font-weight: 600;
-    border: 1.4px solid transparent;
-    transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  }
-  .sidebar nav a:hover { background: var(--chip-bg); color: var(--dozo-ink); }
-  .sidebar nav a.active {
-    background: var(--dozo-green);
-    color: #0d1b14;
-    border-color: var(--dozo-ink);
-    box-shadow: 2px 2px 0 var(--dozo-ink);
+    background: var(--chip-bg);
+    border: 1.4px solid var(--border);
+    border-radius: 999px;
+    padding: 4px 16px;
+    margin: 0 0 32px;
   }
 
-  .main-view {
-    position: relative;
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .overview-panel {
-    flex: none;
-    width: 300px;
-    background: #fff;
-    border-left: 2.5px solid var(--dozo-ink);
-    padding: 18px 16px;
-    overflow-y: auto;
+  .progress-widget {
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: inherit;
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 8px;
   }
-  .overview-panel h2 {
-    font-size: 0.95rem;
-    margin: 0;
-    color: var(--dozo-ink);
-  }
-  .overview-panel .panel-note {
-    margin: 0;
-    font-size: 0.7rem;
-    color: var(--ink-soft);
-    line-height: 1.5;
-  }
+  .progress-widget:hover .progress-track { box-shadow: 0 0 0 3px var(--chip-bg); }
+
   .progress-track {
-    height: 8px;
+    height: 14px;
     border-radius: 999px;
     background: var(--chip-bg);
-    border: 1.4px solid var(--dozo-ink);
+    border: 1.6px solid var(--dozo-ink);
     overflow: hidden;
+    transition: box-shadow 0.15s ease;
   }
   .progress-fill {
     height: 100%;
     background: var(--dozo-green);
     width: 0%;
-    transition: width 0.2s ease;
+    transition: width 0.3s ease, background-color 0.3s ease;
   }
+  .progress-fill.complete { background: var(--dozo-yellow); }
+
   .progress-label {
-    font-size: 0.76rem;
-    color: var(--ink-soft);
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--dozo-ink);
   }
+  .progress-label.complete {
+    font-size: 1.15rem;
+    color: var(--dozo-red);
+  }
+
+  .progress-hint {
+    margin: 4px 0 0;
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+  }
+
+  .todo-panel {
+    margin-top: 18px;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.25s ease;
+    text-align: left;
+  }
+  .todo-panel.open {
+    max-height: 480px;
+    opacity: 1;
+  }
+  .todo-panel .panel-note {
+    margin: 0 0 10px;
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+
   .todo-list {
     list-style: none;
-    margin: 0;
+    margin: 0 0 10px;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -581,7 +142,7 @@
   }
   .todo-item span {
     flex: 1;
-    font-size: 0.84rem;
+    font-size: 0.86rem;
     color: var(--dozo-ink);
   }
   .todo-item.done span {
@@ -622,66 +183,14 @@
     cursor: pointer;
   }
   .todo-add button:hover { background: var(--dozo-green); color: #0d1b14; }
-
-  .mobile-bar { display: none; }
-
-  @media (max-width: 900px) {
-    .app-shell { flex-direction: column; }
-    .mobile-bar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex: none;
-      padding: 10px 14px;
-      background: #fff;
-      border-bottom: 2.5px solid var(--dozo-ink);
-    }
-    .mobile-bar button {
-      border: 1.6px solid var(--dozo-ink);
-      border-radius: 8px;
-      background: #fff;
-      font-weight: 700;
-      font-size: 0.8rem;
-      padding: 6px 10px;
-      cursor: pointer;
-    }
-    .sidebar {
-      position: fixed;
-      inset: 0 30% 0 0;
-      z-index: 1000;
-      transform: translateX(-100%);
-      transition: transform 0.2s ease;
-      box-shadow: var(--shadow);
-    }
-    .sidebar.open { transform: translateX(0); }
-    .overview-panel {
-      position: fixed;
-      inset: 0 0 0 30%;
-      z-index: 1000;
-      width: auto;
-      transform: translateX(100%);
-      transition: transform 0.2s ease;
-      box-shadow: var(--shadow);
-    }
-    .overview-panel.open { transform: translateX(0); }
-    .scrim {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.35);
-      z-index: 900;
-    }
-    .scrim.show { display: block; }
-    .main-view { flex: 1; }
-  }
 </style>
 </head>
 <body>
 
 <div class="mobile-bar">
   <button type="button" id="sidebarToggle">☰ 選單</button>
-  <strong>東京旅遊規劃</strong>
-  <button type="button" id="overviewToggle">📋 進度</button>
+  <strong>首頁總覽</strong>
+  <span></span>
 </div>
 
 <div class="app-shell">
@@ -703,424 +212,34 @@
 <div class="scrim" id="scrim"></div>
 
 <main class="main-view">
+  <div class="home-view">
+    <div class="hero-card ui-card">
+      <span class="eyebrow">TOKYO TRIP PLANNING</span>
+      <h1>東京旅遊</h1>
+      <span class="dates">12/23 ～ 12/27</span>
 
-<div id="map"></div>
+      <button type="button" class="progress-widget" id="progressWidget" aria-expanded="false" aria-controls="todoPanel">
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+        <p class="progress-label" id="progressLabel">0 / 0 已完成</p>
+      </button>
+      <p class="progress-hint">點擊進度條查看待辦清單</p>
 
-<header class="masthead ui-card">
-  <p class="eyebrow">TOKYO TRIP PLANNING</p>
-  <h1><span class="accent">東京</span>旅遊地圖</h1>
-  <p>真實 OpenStreetMap 街道底圖。虛線色框是遊客熱門街區,右上角可切換地鐵／電車路線疊圖。</p>
-</header>
-
-<div class="transit-panel ui-card" id="transitPanel">
-  <button class="panel-label" id="transitToggle" type="button" aria-expanded="true" aria-controls="transitList">
-    <span>地鐵／電車路線</span><span class="chevron">▾</span>
-  </button>
-  <div class="transit-list" id="transitList">
-    <button class="chip" data-line="yamanote" style="--line-color:var(--line-yamanote)" aria-pressed="false">
-      <span class="bar"></span><span>山手線 Yamanote</span>
-    </button>
-    <button class="chip" data-line="ginza" style="--line-color:var(--line-ginza)" aria-pressed="false">
-      <span class="bar"></span><span>銀座線 Ginza</span>
-    </button>
-    <button class="chip" data-line="marunouchi" style="--line-color:var(--line-marunouchi)" aria-pressed="false">
-      <span class="bar"></span><span>丸之內線 Marunouchi</span>
-    </button>
-    <button class="chip" data-line="oedo" style="--line-color:var(--line-oedo)" aria-pressed="false">
-      <span class="bar"></span><span>大江戶線 Oedo</span>
-    </button>
-    <button class="chip" data-line="yurikamome" style="--line-color:var(--line-yurikamome)" aria-pressed="false">
-      <span class="bar"></span><span>百合海鷗號 Yurikamome</span>
-    </button>
-    <button class="chip" data-line="tokaido" style="--line-color:var(--line-tokaido)" aria-pressed="false">
-      <span class="bar"></span><span>東海道線 Tokaido</span>
-    </button>
-    <button class="clear-btn" id="clearLines" type="button">清除路線</button>
-  </div>
-</div>
-
-<div class="legend ui-card">
-  <h2>觀光熱區</h2>
-  <ul>
-    <li><span class="dot" style="background:var(--c-shinjuku)"></span>新宿</li>
-    <li><span class="dot" style="background:var(--c-ikebukuro)"></span>池袋</li>
-    <li><span class="dot" style="background:var(--c-shibuya)"></span>澀谷</li>
-    <li><span class="dot" style="background:var(--c-harajuku)"></span>原宿・表參道</li>
-    <li><span class="dot" style="background:var(--c-roppongi)"></span>六本木</li>
-    <li><span class="dot" style="background:var(--c-ginza)"></span>銀座</li>
-    <li><span class="dot" style="background:var(--c-tokyo)"></span>東京車站・丸之內</li>
-    <li><span class="dot" style="background:var(--c-akihabara)"></span>秋葉原</li>
-    <li><span class="dot" style="background:var(--c-ueno)"></span>上野</li>
-    <li><span class="dot" style="background:var(--c-asakusa)"></span>淺草</li>
-    <li><span class="dot" style="background:var(--c-odaiba)"></span>台場</li>
-  </ul>
-</div>
-
-<aside class="info-panel ui-card" id="infoPanel" hidden>
-  <button class="info-close" id="infoClose" type="button" aria-label="關閉">×</button>
-  <div id="infoContent"></div>
-</aside>
-
-</main>
-
-<aside class="overview-panel ui-card" id="overviewPanel">
-  <div>
-    <h2>行程籌備進度</h2>
-    <p class="panel-note">目前僅存在這台裝置的瀏覽器中,尚未與旅伴同步——「通通丟進來」「行程安排」上線後會改成共用資料。</p>
-  </div>
-  <div>
-    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-    <p class="progress-label" id="progressLabel">0 / 0 已完成</p>
-  </div>
-  <ul class="todo-list" id="todoList"></ul>
-  <div class="todo-add">
-    <input type="text" id="todoInput" placeholder="新增待辦事項...">
-    <button type="button" id="todoAddBtn">新增</button>
-  </div>
-</aside>
-
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script>
-  const map = L.map('map', { zoomControl: false, maxBoundsViscosity: 0.6 })
-    .setView([35.685, 139.735], 12);
-  L.control.zoom({ position: 'bottomleft' }).addTo(map);
-  map.setMaxBounds([[35.15, 139.05], [36.15, 140.45]]);
-
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18,
-    minZoom: 9,
-    className: 'muted-tiles',
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
-  }).addTo(map);
-
-  function addAreaLabel(center, cssColor, name, romaji, isContext) {
-    const html = isContext
-      ? `<div class="area-label context"><span class="name">${name}</span></div>`
-      : `<div class="area-label" style="--c:${cssColor}"><span class="name">${name}</span><span class="romaji">${romaji}</span></div>`;
-    return L.marker(center, { icon: L.divIcon({ className: '', html, iconSize: [0, 0] }), interactive: false }).addTo(map);
-  }
-
-  const HOTSPOTS = [
-    { key: 'ikebukuro', name: '池袋', romaji: 'Ikebukuro', center: [35.7295, 139.7109], color: 'var(--c-ikebukuro)', radius: 1050,
-      toggleLines: ['yamanote', 'marunouchi'],
-      image: 'https://images.unsplash.com/photo-1763530054615-08f3acd38876?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['太陽城水族館 Sunshine Aquarium', '豐島區庁展望台'],
-        food: ['無敵家(西口豚骨拉麵人氣排隊店)', '池袋餃子スタジアム(Sunshine City內餃子美食街)'],
-        cafes: ['南池袋公園 RACINES FARM TO PARK'],
-        shopping: ['西武百貨 池袋本店', '東武百貨 池袋店', 'Sunshine City 購物中心']
-      } },
-    { key: 'ueno', name: '上野', romaji: 'Ueno', center: [35.7141, 139.7774], color: 'var(--c-ueno)', radius: 850,
-      toggleLines: ['yamanote', 'ginza'],
-      image: 'https://images.unsplash.com/photo-1558452919-3a47422e2fd0?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['上野恩賜公園', '上野動物園', '東京國立博物館'],
-        food: ['うさぎや 上野本店(百年銅鑼燒老店)', '阿美橫丁多家排隊海鮮丼店'],
-        cafes: ['上野公園 PARK SIDE CAFE'],
-        shopping: ['阿美橫丁(Ameyoko)商店街']
-      } },
-    { key: 'asakusa', name: '淺草', romaji: 'Asakusa', center: [35.7118, 139.7966], color: 'var(--c-asakusa)', radius: 750,
-      toggleLines: ['ginza'],
-      image: 'https://images.unsplash.com/photo-1580167227251-be70f01b0c51?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['淺草寺', '雷門', '晴空塔遠眺點'],
-        food: ['淺草今半(Asakusa Imahan)壽喜燒本店', '尾張屋 淺草總本店(百年蕎麥麵老店)'],
-        cafes: ['星巴克 淺草雷門店(百年町屋建築)'],
-        shopping: ['仲見世通商店街']
-      } },
-    { key: 'akihabara', name: '秋葉原', romaji: 'Akihabara', center: [35.6984, 139.7731], color: 'var(--c-akihabara)', radius: 700,
-      toggleLines: ['yamanote'],
-      image: 'https://images.unsplash.com/photo-1561172317-5427a31ef91e?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['電器街', '動漫周邊店集散地'],
-        food: ['秋葉原ラーメン じゃんがら 本店(九州豚骨拉麵老店)'],
-        cafes: ['@ほぉ~むカフェ 本店(秋葉原代表性女僕咖啡廳)'],
-        shopping: ['Yodobashi Akiba 友都八喜', '秋葉原電氣街商圈']
-      } },
-    { key: 'shinjuku', name: '新宿', romaji: 'Shinjuku', center: [35.6926, 139.7006], color: 'var(--c-shinjuku)', radius: 1250,
-      toggleLines: ['yamanote', 'marunouchi', 'oedo'],
-      image: 'https://images.unsplash.com/photo-1595274729415-b10c3b61172f?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['新宿御苑', '東京都廳展望室(免費)', '歌舞伎町'],
-        food: ['らーめん二郎 新宿歌舞伎町店(超人氣大份量拉麵)', '思い出橫丁 烤雞串橫丁'],
-        cafes: ['BERG(新宿車站內傳奇立食咖啡店)'],
-        shopping: ['伊勢丹新宿本店', '新宿高島屋 Times Square', 'LUMINE']
-      } },
-    { key: 'tokyo', name: '東京車站・丸之內', romaji: 'Tokyo Sta. / Marunouchi', center: [35.6812, 139.7645], color: 'var(--c-tokyo)', radius: 950,
-      toggleLines: ['yamanote', 'marunouchi', 'tokaido'],
-      image: 'https://images.unsplash.com/photo-1566484444878-f5456ec7e1b8?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['東京車站丸之內站舍', '皇居外苑'],
-        food: ['六厘舍(東京拉麵街人氣沾麵店)'],
-        cafes: ['丸の內 Café1894(三菱一號館內復古洋樓咖啡廳)'],
-        shopping: ['大丸東京店', '丸之內大樓(Marunouchi Building)', 'KITTE']
-      } },
-    { key: 'harajuku', name: '原宿・表參道', romaji: 'Harajuku / Omotesando', center: [35.6684, 139.7075], color: 'var(--c-harajuku)', radius: 750,
-      toggleLines: ['yamanote', 'ginza'],
-      image: 'https://images.unsplash.com/photo-1664806462678-5df01513f7b9?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['明治神宮', '竹下通'],
-        food: ['竹下通 Marion Crepes(元祖可麗餅)'],
-        cafes: ['Koffee Mameya(表參道巷弄人氣咖啡)'],
-        shopping: ['表參道之丘 Omotesando Hills']
-      } },
-    { key: 'ginza', name: '銀座', romaji: 'Ginza', center: [35.6717, 139.7650], color: 'var(--c-ginza)', radius: 850,
-      toggleLines: ['ginza'],
-      image: 'https://images.unsplash.com/photo-1665490523157-e077bc700bc9?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['歌舞伎座', '銀座和光鐘樓'],
-        food: ['銀座 天一 本店(百年天婦羅老店)'],
-        cafes: ["Café de l'Ambre(1948年創業咖啡老店)"],
-        shopping: ['銀座三越', '松屋銀座', 'GINZA SIX']
-      } },
-    { key: 'shibuya', name: '澀谷', romaji: 'Shibuya', center: [35.6595, 139.7005], color: 'var(--c-shibuya)', radius: 1000,
-      toggleLines: ['yamanote', 'ginza'],
-      image: 'https://images.unsplash.com/photo-1549693578-d683be217e58?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['澀谷SCRAMBLE SQUARE展望台', '忠犬八公像'],
-        food: ['一蘭拉麵澀谷店', '澀谷橫丁'],
-        cafes: ['Blue Bottle Coffee 澀谷', '蔦屋書店咖啡'],
-        shopping: ['澀谷109', '西武澀谷店', 'PARCO']
-      } },
-    { key: 'roppongi', name: '六本木', romaji: 'Roppongi', center: [35.6627, 139.7318], color: 'var(--c-roppongi)', radius: 850,
-      toggleLines: ['oedo'],
-      image: 'https://images.unsplash.com/photo-1624434512895-2d1887ebfccf?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['六本木新城展望台(森大廈)', '東京中城', '國立新美術館'],
-        food: ['權八 Gonpachi 西麻布店(Kill Bill場景原型居酒屋)'],
-        cafes: ['The Roastery by Nozy Coffee(東京中城內人氣精品咖啡)'],
-        shopping: ['六本木新城購物區', '東京中城 Galleria']
-      } },
-    { key: 'odaiba', name: '台場', romaji: 'Odaiba', center: [35.6270, 139.7755], color: 'var(--c-odaiba)', radius: 750,
-      toggleLines: ['yurikamome'],
-      image: 'https://images.unsplash.com/photo-1682945466664-8a21b532bee6?q=80&w=800&auto=format&fit=crop',
-      info: {
-        attractions: ['台場海濱公園', '彩虹大橋', '獨角獸鋼彈立像'],
-        food: ['台場一丁目商店街(DECKS內昭和懷舊美食街)'],
-        cafes: ['星巴克 台場富士電視台店(景觀咖啡座)'],
-        shopping: ['DiverCity Tokyo Plaza', 'AQUA CiTY台場', 'VenusFort']
-      } }
-  ];
-
-  const CONTEXT = [
-    { name: '橫濱 Yokohama', center: [35.4658, 139.6222], radius: 1700 },
-    { name: '川崎 Kawasaki', center: [35.5309, 139.6967], radius: 950 },
-    { name: '千葉 Chiba', center: [35.6073, 140.1233], radius: 1300 },
-    { name: '埼玉 Saitama', center: [35.9064, 139.6233], radius: 1500 }
-  ];
-
-  const areaLayers = {};
-  let activeKey = null;
-
-  HOTSPOTS.forEach(a => {
-    const circle = L.circle(a.center, {
-      radius: a.radius, color: a.color, weight: 2.6, dashArray: '7 5', fillColor: a.color, fillOpacity: 0.16
-    }).addTo(map);
-    const marker = addAreaLabel(a.center, a.color, a.name, a.romaji, false);
-    const labelEl = marker.getElement() ? marker.getElement().querySelector('.area-label') : null;
-
-    areaLayers[a.key] = { circle, labelEl, data: a };
-
-    circle.on('click', (e) => {
-      L.DomEvent.stopPropagation(e);
-      setActiveArea(activeKey === a.key ? null : a.key);
-    });
-  });
-
-  function setActiveArea(key) {
-    activeKey = key;
-    Object.keys(areaLayers).forEach(k => {
-      const layer = areaLayers[k];
-      const isActive = key === null || k === key;
-      layer.circle.setStyle({
-        color: isActive ? layer.data.color : 'var(--c-context)',
-        fillColor: isActive ? layer.data.color : 'var(--c-context)',
-        weight: isActive ? 2.6 : 1.3,
-        fillOpacity: isActive ? 0.16 : 0.14,
-        dashArray: isActive ? '7 5' : null
-      });
-      if (layer.labelEl) {
-        layer.labelEl.classList.toggle('context', !isActive);
-      }
-    });
-    applyLineSelection(key ? areaLayers[key].data.toggleLines : []);
-    if (key) showInfoPanel(areaLayers[key].data);
-    else hideInfoPanel();
-  }
-
-  function infoSection(label, items) {
-    if (!items || !items.length) return '';
-    return `<div class="info-section"><h3>${label}</h3><ul>${items.map(i => `<li>${i}</li>`).join('')}</ul></div>`;
-  }
-
-  function showInfoPanel(area) {
-    const content = document.getElementById('infoContent');
-    const isUnsplash = area.image && area.image.includes('unsplash.com');
-    const creditHref = isUnsplash ? 'https://unsplash.com' : 'https://commons.wikimedia.org';
-    const creditLabel = isUnsplash ? 'Unsplash' : 'Wikimedia Commons';
-    const image = area.image ? `
-      <figure class="info-image">
-        <img src="${area.image}" alt="${area.name} ${area.romaji}" loading="lazy" referrerpolicy="no-referrer">
-        <figcaption>圖片來源:<a href="${creditHref}" target="_blank" rel="noopener">${creditLabel}</a></figcaption>
-      </figure>` : '';
-    content.innerHTML = `
-      ${image}
-      <div class="info-header" style="--c:${area.color}">
-        <span class="info-dot"></span>
-        <div>
-          <h2>${area.name}</h2>
-          <p class="romaji">${area.romaji}</p>
+      <div class="todo-panel" id="todoPanel">
+        <p class="panel-note">目前僅存在這台裝置的瀏覽器中,尚未與旅伴同步——「通通丟進來」「行程安排」上線後會改成共用資料。</p>
+        <ul class="todo-list" id="todoList"></ul>
+        <div class="todo-add">
+          <input type="text" id="todoInput" placeholder="新增待辦事項...">
+          <button type="button" id="todoAddBtn">新增</button>
         </div>
       </div>
-      ${infoSection('推薦景點', area.info.attractions)}
-      ${infoSection('推薦餐廳', area.info.food)}
-      ${infoSection('咖啡廳', area.info.cafes)}
-      ${infoSection('商店街／百貨', area.info.shopping)}
-    `;
-    document.getElementById('infoPanel').hidden = false;
-  }
+    </div>
+  </div>
+</main>
 
-  function hideInfoPanel() {
-    document.getElementById('infoPanel').hidden = true;
-  }
+</div>
 
-  document.getElementById('infoClose').addEventListener('click', () => setActiveArea(null));
-  map.on('click', () => setActiveArea(null));
-
-  CONTEXT.forEach(a => {
-    L.circle(a.center, { radius: a.radius, color: 'var(--c-context)', weight: 1.3, fillColor: 'var(--c-context)', fillOpacity: 0.14 }).addTo(map);
-    addAreaLabel(a.center, null, a.name, '', true);
-  });
-
-  // landmarks
-  [
-    { name: '東京鐵塔', center: [35.6586, 139.7454] },
-    { name: '晴空塔', center: [35.7101, 139.8107] }
-  ].forEach(lm => {
-    L.circleMarker(lm.center, { radius: 4, color: 'var(--ink-soft)', weight: 1.5, fillColor: '#fff', fillOpacity: 1 }).addTo(map);
-    L.marker(lm.center, { icon: L.divIcon({ className: '', html: `<div class="landmark-label">${lm.name}</div>`, iconSize: [0, 0] }), interactive: false }).addTo(map);
-  });
-
-  // parks + Imperial Palace
-  [
-    { name: '皇居', center: [35.6852, 139.7528], r: 750 },
-    { name: '代代木公園', center: [35.6720, 139.6950], r: 500 },
-    { name: '新宿御苑', center: [35.6851, 139.7100], r: 400 }
-  ].forEach(p => {
-    L.circle(p.center, { radius: p.r, color: '#4f6a3f', weight: 1, fillColor: '#6f8f5c', fillOpacity: 0.45 }).addTo(map);
-    L.marker(p.center, { icon: L.divIcon({ className: '', html: `<div class="landmark-label">${p.name}</div>`, iconSize: [0, 0] }), interactive: false }).addTo(map);
-  });
-
-  const LINES = {
-    yamanote: { color: 'var(--line-yamanote)', pts: [
-      [35.7295, 139.7109], [35.6896, 139.7006], [35.6829, 139.7020], [35.6702, 139.7027], [35.6580, 139.7016],
-      [35.6467, 139.7101], [35.6339, 139.7156], [35.6262, 139.7232], [35.6197, 139.7284], [35.6285, 139.7388],
-      [35.6455, 139.7477], [35.6553, 139.7570], [35.6665, 139.7585], [35.6749, 139.7634], [35.6812, 139.7671],
-      [35.6918, 139.7708], [35.6984, 139.7731], [35.7075, 139.7745], [35.7141, 139.7774], [35.7205, 139.7787],
-      [35.7281, 139.7707], [35.7322, 139.7668], [35.7378, 139.7607], [35.7367, 139.7469], [35.7334, 139.7392],
-      [35.7317, 139.7286], [35.7295, 139.7109]
-    ] },
-    ginza: { color: 'var(--line-ginza)', pts: [
-      [35.6580, 139.7016], [35.6652, 139.7124], [35.6698, 139.7175], [35.6726, 139.7238], [35.6772, 139.7368],
-      [35.6733, 139.7402], [35.6706, 139.7488], [35.6665, 139.7585], [35.6717, 139.7650], [35.6774, 139.7714],
-      [35.6832, 139.7745], [35.6863, 139.7734], [35.6918, 139.7708], [35.6976, 139.7738], [35.7078, 139.7738],
-      [35.7141, 139.7774], [35.7112, 139.7830], [35.7112, 139.7897], [35.7118, 139.7966]
-    ] },
-    marunouchi: { color: 'var(--line-marunouchi)', pts: [
-      [35.6896, 139.7006], [35.6857, 139.7233], [35.6772, 139.7368], [35.6812, 139.7671],
-      [35.6958, 139.7663], [35.7089, 139.7422], [35.7295, 139.7109]
-    ] },
-    oedo: { color: 'var(--line-oedo)', pts: [
-      [35.6896, 139.7006], [35.6627, 139.7318], [35.6555, 139.7573], [35.6654, 139.7707],
-      [35.6597, 139.7793], [35.6967, 139.7930], [35.7020, 139.7455], [35.6896, 139.7006]
-    ] },
-    yurikamome: { color: 'var(--line-yurikamome)', pts: [
-      [35.6665, 139.7585], [35.6558, 139.7648], [35.6296, 139.7796], [35.6270, 139.7755]
-    ] },
-    tokaido: { color: 'var(--line-tokaido)', pts: [
-      [35.6812, 139.7671], [35.6285, 139.7388], [35.5309, 139.6967], [35.4658, 139.6222]
-    ] }
-  };
-
-  const lineLayers = {};
-  Object.keys(LINES).forEach(key => {
-    const L_ = LINES[key];
-    const group = L.layerGroup();
-    L.polyline(L_.pts, { color: getComputedColor(L_.color), weight: 4.5, opacity: 0.92, lineJoin: 'round', interactive: false }).addTo(group);
-    L_.pts.forEach(pt => {
-      L.circleMarker(pt, { radius: 3.4, color: getComputedColor(L_.color), weight: 1.4, fillColor: '#fff', fillOpacity: 1, interactive: false }).addTo(group);
-    });
-    lineLayers[key] = group;
-  });
-
-  function getComputedColor(varExpr) {
-    const probe = document.createElement('div');
-    probe.style.color = varExpr;
-    document.body.appendChild(probe);
-    const c = getComputedStyle(probe).color;
-    probe.remove();
-    return c;
-  }
-
-  const chips = document.querySelectorAll('.chip');
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      const key = chip.dataset.line;
-      const active = !chip.classList.contains('active');
-      chip.classList.toggle('active', active);
-      chip.setAttribute('aria-pressed', String(active));
-      if (active) lineLayers[key].addTo(map);
-      else map.removeLayer(lineLayers[key]);
-    });
-  });
-
-  function applyLineSelection(keys) {
-    const activeSet = new Set(keys || []);
-    chips.forEach(chip => {
-      const key = chip.dataset.line;
-      const active = activeSet.has(key);
-      chip.classList.toggle('active', active);
-      chip.setAttribute('aria-pressed', String(active));
-      if (active) lineLayers[key].addTo(map);
-      else map.removeLayer(lineLayers[key]);
-    });
-    if (activeSet.size) setTransitCollapsed(false);
-  }
-
-  document.getElementById('clearLines').addEventListener('click', () => applyLineSelection([]));
-
-  const transitPanel = document.getElementById('transitPanel');
-  const transitToggle = document.getElementById('transitToggle');
-  function setTransitCollapsed(collapsed) {
-    transitPanel.classList.toggle('collapsed', collapsed);
-    transitToggle.setAttribute('aria-expanded', String(!collapsed));
-  }
-  transitToggle.addEventListener('click', () => {
-    setTransitCollapsed(!transitPanel.classList.contains('collapsed'));
-  });
-
-  const sidebar = document.getElementById('sidebar');
-  const overviewPanel = document.getElementById('overviewPanel');
-  const scrim = document.getElementById('scrim');
-  function closeDrawers() {
-    sidebar.classList.remove('open');
-    overviewPanel.classList.remove('open');
-    scrim.classList.remove('show');
-  }
-  document.getElementById('sidebarToggle').addEventListener('click', () => {
-    const willOpen = !sidebar.classList.contains('open');
-    closeDrawers();
-    if (willOpen) { sidebar.classList.add('open'); scrim.classList.add('show'); }
-  });
-  document.getElementById('overviewToggle').addEventListener('click', () => {
-    const willOpen = !overviewPanel.classList.contains('open');
-    closeDrawers();
-    if (willOpen) { overviewPanel.classList.add('open'); scrim.classList.add('show'); }
-  });
-  scrim.addEventListener('click', closeDrawers);
-
+<script src="sidebar.js"></script>
+<script>
   const TODO_KEY = 'tokyoTripTodos';
   const DEFAULT_TODOS = [
     { text: '訂機票', done: false },
@@ -1151,10 +270,17 @@
         <button type="button" class="todo-remove" data-idx="${i}" aria-label="刪除">×</button>
       </li>
     `).join('');
+
     const doneCount = todos.filter(t => t.done).length;
     const total = todos.length;
-    document.getElementById('progressLabel').textContent = `${doneCount} / ${total} 已完成`;
-    document.getElementById('progressFill').style.width = total ? `${(doneCount / total) * 100}%` : '0%';
+    const complete = total > 0 && doneCount === total;
+
+    const fill = document.getElementById('progressFill');
+    const label = document.getElementById('progressLabel');
+    fill.style.width = total ? `${(doneCount / total) * 100}%` : '0%';
+    fill.classList.toggle('complete', complete);
+    label.classList.toggle('complete', complete);
+    label.textContent = complete ? '出發～！' : `${doneCount} / ${total} 已完成`;
 
     list.querySelectorAll('input[type="checkbox"]').forEach(cb => {
       cb.addEventListener('change', () => {
@@ -1164,7 +290,8 @@
       });
     });
     list.querySelectorAll('.todo-remove').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
         todos.splice(Number(btn.dataset.idx), 1);
         saveTodos(todos);
         renderTodos();
@@ -1181,9 +308,17 @@
     input.value = '';
     renderTodos();
   }
-  document.getElementById('todoAddBtn').addEventListener('click', addTodo);
+  document.getElementById('todoAddBtn').addEventListener('click', (e) => { e.stopPropagation(); addTodo(); });
+  document.getElementById('todoInput').addEventListener('click', (e) => e.stopPropagation());
   document.getElementById('todoInput').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addTodo();
+  });
+
+  const progressWidget = document.getElementById('progressWidget');
+  const todoPanel = document.getElementById('todoPanel');
+  progressWidget.addEventListener('click', () => {
+    const open = todoPanel.classList.toggle('open');
+    progressWidget.setAttribute('aria-expanded', String(open));
   });
 
   renderTodos();
