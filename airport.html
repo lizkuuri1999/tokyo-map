@@ -6,6 +6,142 @@
 <title>機場交通 - 東京旅遊規劃</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="shared.css">
+<style>
+  .page-content { align-items: flex-start; padding: 40px 24px; }
+
+  .search-card {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 30px 32px;
+  }
+
+  .search-card .eyebrow {
+    display: inline-block;
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+    background: var(--dozo-yellow);
+    border: 1.6px solid var(--dozo-ink);
+    border-radius: 999px;
+    padding: 2px 10px;
+    margin: 0 0 12px;
+  }
+  .search-card h1 {
+    font-family: 'GenJyuuGothic', 'Noto Serif TC', serif;
+    font-size: 1.35rem;
+    margin: 0 0 8px;
+  }
+  .search-card .sub {
+    margin: 0 0 20px;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--ink-soft);
+  }
+
+  .search-row {
+    display: flex;
+    gap: 8px;
+  }
+  .search-row input {
+    flex: 1;
+    border: 1.6px solid var(--dozo-ink);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-family: inherit;
+    font-size: 0.9rem;
+  }
+  .search-row button {
+    flex: none;
+    border: 1.6px solid var(--dozo-ink);
+    border-radius: 10px;
+    background: var(--dozo-ink);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  .search-row button:hover { background: var(--dozo-green); color: #0d1b14; }
+  .search-row button:disabled { opacity: 0.5; cursor: default; }
+
+  .search-status {
+    margin: 10px 0 0;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+    min-height: 1.2em;
+  }
+  .search-status.error { color: var(--dozo-red); font-weight: 600; }
+
+  .result-area { margin-top: 22px; }
+
+  .result-match {
+    font-size: 0.86rem;
+    margin: 0 0 14px;
+    padding: 10px 14px;
+    background: var(--chip-bg);
+    border-radius: 10px;
+    border: 1.4px solid var(--border);
+  }
+  .result-match strong { color: var(--dozo-ink); }
+
+  .route-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .route-card {
+    border: 1.6px solid var(--dozo-ink);
+    border-radius: 12px;
+    padding: 12px 14px;
+    position: relative;
+  }
+  .route-card.fastest { background: #fff; }
+  .route-card.cheaper { background: var(--paper); }
+  .route-card .route-tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    border-radius: 999px;
+    padding: 2px 10px;
+    margin: 0 0 6px;
+    border: 1.4px solid var(--dozo-ink);
+  }
+  .route-card.fastest .route-tag { background: var(--dozo-green); }
+  .route-card.cheaper .route-tag { background: var(--dozo-blue); }
+  .route-card h3 {
+    margin: 0 0 6px;
+    font-size: 0.92rem;
+  }
+  .route-meta {
+    display: flex;
+    gap: 16px;
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .route-meta span { color: var(--dozo-ink); }
+
+  .view-area-link {
+    display: inline-block;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--dozo-ink);
+    text-decoration: none;
+    border-bottom: 1.6px solid var(--dozo-green);
+    margin-bottom: 14px;
+  }
+  .view-area-link:hover { color: var(--dozo-green); }
+
+  .disclaimer {
+    margin: 0;
+    font-size: 0.68rem;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+</style>
 </head>
 <body>
 
@@ -36,10 +172,18 @@
 
 <main class="main-view">
   <div class="page-content">
-    <div class="placeholder-card ui-card">
-      <span class="eyebrow">開發中</span>
-      <h1>機場交通</h1>
-      <p>這裡之後會提供成田/羽田機場到市內主要車站的交通方式比較(電車、利木津巴士、計程車等),並且能輸入飯店地址或地標,直接算出從機場過去的交通方式、花費時間與票價。</p>
+    <div class="search-card ui-card">
+      <span class="eyebrow">成田機場交通比較</span>
+      <h1>輸入飯店、車站或地標名稱</h1>
+      <p class="sub">會幫你比對距離最接近的熱門景點分區,顯示從成田機場出發最快跟最省錢的電車方案跟花費。</p>
+
+      <div class="search-row">
+        <input type="text" id="destInput" placeholder="例如:新宿王子大飯店、澀谷站、六本木之丘...">
+        <button type="button" id="searchBtn">搜尋</button>
+      </div>
+      <p class="search-status" id="searchStatus"></p>
+
+      <div class="result-area" id="resultArea" hidden></div>
     </div>
   </div>
 </main>
@@ -47,5 +191,145 @@
 </div>
 
 <script src="sidebar.js"></script>
+<script>
+  const NARITA = { lat: 35.7720, lng: 140.3929 };
+
+  // 只需座標跟名稱來比對最近區域,詳細景點資訊在 spots.html
+  const AREAS = [
+    { key: 'shinjuku', name: '新宿', romaji: 'Shinjuku', center: [35.6926, 139.7006],
+      fastest: { route: "JR成田特快 N'EX 直達", time: '約80分', fare: '¥3250' },
+      cheaper: { route: '京成本線特急 + 山手線轉乘(經日暮里)', time: '約100分', fare: '¥1350' } },
+    { key: 'ikebukuro', name: '池袋', romaji: 'Ikebukuro', center: [35.7295, 139.7109],
+      fastest: { route: "JR成田特快 N'EX 直達(部分班次)", time: '約95分', fare: '¥3250' },
+      cheaper: { route: '京成Skyliner + 山手線轉乘(經上野)', time: '約85分', fare: '¥2770' } },
+    { key: 'shibuya', name: '澀谷', romaji: 'Shibuya', center: [35.6595, 139.7005],
+      fastest: { route: "JR成田特快 N'EX 直達", time: '約100分', fare: '¥3250' },
+      cheaper: { route: '京成Skyliner + 山手線轉乘(經上野)', time: '約90分', fare: '¥2770' } },
+    { key: 'harajuku', name: '原宿・表參道', romaji: 'Harajuku / Omotesando', center: [35.6684, 139.7075],
+      fastest: { route: "N'EX至澀谷/新宿 + 山手線轉乘", time: '約105分', fare: '¥3450' },
+      cheaper: { route: '京成Skyliner + 山手線轉乘', time: '約95分', fare: '¥2970' } },
+    { key: 'roppongi', name: '六本木', romaji: 'Roppongi', center: [35.6627, 139.7318],
+      fastest: { route: '利木津巴士 直達六本木(依路況)', time: '約100分', fare: '¥3200' },
+      cheaper: { route: '京成Skyliner至上野 + 日比谷線轉乘', time: '約90分', fare: '¥2780' } },
+    { key: 'ginza', name: '銀座', romaji: 'Ginza', center: [35.6717, 139.7650],
+      fastest: { route: '利木津巴士 直達銀座(依路況)', time: '約90分', fare: '¥3200' },
+      cheaper: { route: '京成Skyliner至上野 + 銀座線轉乘', time: '約65分', fare: '¥2770' } },
+    { key: 'tokyo', name: '東京車站・丸之內', romaji: 'Tokyo Sta. / Marunouchi', center: [35.6812, 139.7645],
+      fastest: { route: "JR成田特快 N'EX 直達", time: '約56分', fare: '¥3070' },
+      cheaper: { route: '京成本線特急 + 山手線轉乘', time: '約85分', fare: '¥1350' } },
+    { key: 'akihabara', name: '秋葉原', romaji: 'Akihabara', center: [35.6984, 139.7731],
+      fastest: { route: "N'EX至東京站 + 山手線／總武線轉乘", time: '約65分', fare: '¥3180' },
+      cheaper: { route: '京成Skyliner至日暮里 + 山手線轉乘', time: '約55分', fare: '¥2670' } },
+    { key: 'ueno', name: '上野', romaji: 'Ueno', center: [35.7141, 139.7774],
+      fastest: { route: '京成Skyliner 直達', time: '約44分', fare: '¥2570' },
+      cheaper: { route: '京成本線特急 直達', time: '約75分', fare: '¥1050' } },
+    { key: 'asakusa', name: '淺草', romaji: 'Asakusa', center: [35.7118, 139.7966],
+      fastest: { route: '京成Skyliner至上野 + 銀座線轉乘', time: '約55分', fare: '¥2770' },
+      cheaper: { route: '京成本線特急直通都營淺草線 直達', time: '約75分', fare: '¥1360' } },
+    { key: 'odaiba', name: '台場', romaji: 'Odaiba', center: [35.6270, 139.7755],
+      fastest: { route: "N'EX至東京站 + 百合海鷗號轉乘", time: '約80分', fare: '¥3540' },
+      cheaper: { route: '京成本線 + 山手線＋百合海鷗號轉乘', time: '約100分', fare: '¥2870' } }
+  ];
+
+  function haversineKm(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function findNearestArea(lat, lng) {
+    let best = null;
+    let bestDist = Infinity;
+    AREAS.forEach(a => {
+      const d = haversineKm(lat, lng, a.center[0], a.center[1]);
+      if (d < bestDist) { bestDist = d; best = a; }
+    });
+    return { area: best, distance: bestDist };
+  }
+
+  async function geocodeOnce(query, bounded) {
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp'
+      + (bounded ? '&viewbox=139.05,36.15,140.45,35.15&bounded=1' : '')
+      + '&q=' + encodeURIComponent(query);
+    const res = await fetch(url, { headers: { 'Accept-Language': 'zh-TW,ja,en' } });
+    if (!res.ok) throw new Error('geocode failed');
+    const data = await res.json();
+    if (!data.length) return null;
+    return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), label: data[0].display_name };
+  }
+
+  // 加上詞彙 bias(例如「東京」)有時反而讓某些查詢(尤其含繁體「站」字)配對失敗,
+  // 所以先用原始查詢字串在東京範圍框內搜尋,找不到再放寬範圍框重試一次。
+  async function geocode(query) {
+    return (await geocodeOnce(query, true)) || (await geocodeOnce(query, false));
+  }
+
+  function routeCard(tag, label, r) {
+    return `
+      <div class="route-card ${tag}">
+        <span class="route-tag">${label}</span>
+        <h3>${r.route}</h3>
+        <div class="route-meta"><span>時間:${r.time}</span><span>票價:${r.fare}</span></div>
+      </div>`;
+  }
+
+  function renderResult(query, geo, match) {
+    const resultArea = document.getElementById('resultArea');
+    resultArea.hidden = false;
+    resultArea.innerHTML = `
+      <div class="result-match">
+        「${query}」查到的座標最接近:<strong>${match.area.name} ${match.area.romaji}</strong>
+        (距離約 ${match.distance.toFixed(1)} 公里)
+      </div>
+      <div class="route-cards">
+        ${routeCard('fastest', '最快', match.area.fastest)}
+        ${routeCard('cheaper', '較省錢', match.area.cheaper)}
+      </div>
+      <a class="view-area-link" href="spots.html?area=${match.area.key}">在地圖上查看${match.area.name} →</a>
+      <p class="disclaimer">以上時間與票價為參考值,實際依當日班次、季節票種而定,建議出發前至各交通公司官方網站再次確認。比對結果是「距離輸入地點最近的熱門景點分區」,不是逐一飯店精算的門到門路線。</p>
+    `;
+  }
+
+  const destInput = document.getElementById('destInput');
+  const searchBtn = document.getElementById('searchBtn');
+  const searchStatus = document.getElementById('searchStatus');
+  const resultArea = document.getElementById('resultArea');
+
+  async function runSearch() {
+    const query = destInput.value.trim();
+    if (!query) return;
+    searchStatus.classList.remove('error');
+    searchStatus.textContent = '查詢中...';
+    searchBtn.disabled = true;
+    resultArea.hidden = true;
+    try {
+      const geo = await geocode(query);
+      if (!geo) {
+        searchStatus.classList.add('error');
+        searchStatus.textContent = '找不到這個地點,試試看更完整的名稱(例如加上「站」或飯店全名)。';
+        return;
+      }
+      const match = findNearestArea(geo.lat, geo.lng);
+      if (match.distance > 40) {
+        searchStatus.classList.add('error');
+        searchStatus.textContent = `查到的地點(${geo.label})距離東京市區太遠,可能不是你要找的地方,試試更完整或更具體的名稱。`;
+        return;
+      }
+      searchStatus.textContent = '';
+      renderResult(query, geo, match);
+    } catch (e) {
+      searchStatus.classList.add('error');
+      searchStatus.textContent = '查詢失敗,請稍後再試一次。';
+    } finally {
+      searchBtn.disabled = false;
+    }
+  }
+
+  searchBtn.addEventListener('click', runSearch);
+  destInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') runSearch(); });
+</script>
 </body>
 </html>

@@ -803,6 +803,12 @@
   transitToggle.addEventListener('click', () => {
     setTransitCollapsed(!transitPanel.classList.contains('collapsed'));
   });
+
+  const urlArea = new URLSearchParams(location.search).get('area');
+  if (urlArea && areaLayers[urlArea]) {
+    map.setView(areaLayers[urlArea].data.center, 13);
+    setActiveArea(urlArea);
+  }
 </script>
 </body>
 </html>
