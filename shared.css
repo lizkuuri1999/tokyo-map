@@ -32,6 +32,7 @@ body {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   background: var(--paper);
   color: var(--dozo-ink);
@@ -128,21 +129,25 @@ body {
 @media (max-width: 900px) {
   .app-shell { flex-direction: column; }
   .mobile-bar {
-    display: flex;
+    display: grid;
+    grid-template-columns: 40px 1fr 40px;
     align-items: center;
-    justify-content: space-between;
     flex: none;
     padding: 10px 14px;
     background: #fff;
     border-bottom: 2.5px solid var(--dozo-ink);
   }
+  .mobile-bar strong { text-align: center; }
   .mobile-bar button {
+    width: 40px;
+    height: 36px;
     border: 1.6px solid var(--dozo-ink);
     border-radius: 8px;
     background: #fff;
     font-weight: 700;
-    font-size: 0.8rem;
-    padding: 6px 10px;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 0;
     cursor: pointer;
   }
   .sidebar {

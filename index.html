@@ -17,6 +17,7 @@
   }
 
   .hero-card {
+    min-width: 0;
     width: 100%;
     max-width: 460px;
     padding: 36px 32px;
@@ -165,6 +166,7 @@
   }
   .todo-add input {
     flex: 1;
+    min-width: 0;
     border: 1.6px solid var(--dozo-ink);
     border-radius: 8px;
     padding: 6px 10px;
@@ -172,6 +174,7 @@
     font-size: 0.82rem;
   }
   .todo-add button {
+    flex: none;
     border: 1.6px solid var(--dozo-ink);
     border-radius: 8px;
     background: var(--dozo-ink);
@@ -187,7 +190,7 @@
 <body>
 
 <div class="mobile-bar">
-  <button type="button" id="sidebarToggle">☰ 選單</button>
+  <button type="button" id="sidebarToggle" aria-label="開啟選單">☰</button>
   <strong>首頁總覽</strong>
   <span></span>
 </div>

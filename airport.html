@@ -11,6 +11,7 @@
 
   .search-card {
     width: 100%;
+    min-width: 0;
     max-width: 560px;
     margin: 0 auto;
     padding: 30px 32px;
@@ -45,6 +46,7 @@
   }
   .search-row input {
     flex: 1;
+    min-width: 0;
     border: 1.6px solid var(--dozo-ink);
     border-radius: 10px;
     padding: 10px 14px;
@@ -146,7 +148,7 @@
 <body>
 
 <div class="mobile-bar">
-  <button type="button" id="sidebarToggle">☰ 選單</button>
+  <button type="button" id="sidebarToggle" aria-label="開啟選單">☰</button>
   <strong>機場交通</strong>
   <span></span>
 </div>
